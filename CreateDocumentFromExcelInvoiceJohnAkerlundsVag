@@ -1,0 +1,78 @@
+function createDocument() {
+  
+  var sheet = '1RyLepAcMo5dTH42FJhCp6CaDZ4iw-QDVKGMxYlHIsxs'
+  //var headers = Sheets.Spreadsheets.Values.get('1mjWpp3MiBOSd7tW2y5O2jY9bC7HgRX07gF3NDOUYoQY', 'A2:I2');
+  var tactics = Sheets.Spreadsheets.Values.get(sheet, 'A19:AE26');//Hämtar celler från excelark
+  var templateId = '1mt1tM37OHJfcXSgfK54P6gW90zWuTRjPg2HfoB7V5gc';//Hämtar fakturamall
+  
+  for(var i = 0; i < tactics.values.length; i++){
+    
+    if(tactics.values[i][1] == '')continue;
+    
+    //Get specific data from sheet and save to variable
+    var house = tactics.values[i][1];
+    var parkering = tactics.values[i][16];
+    var road = tactics.values[i][17];
+    var extra = tactics.values[i][18];
+    var apanage = tactics.values[i][20];
+    var oresavrundning = tactics.values[i][24];
+    var avrundat = tactics.values[i][22];
+    
+    //Get customer data from sheet
+    var kundNr = tactics.values[i][25];
+    var fakturaNr = tactics.values[i][28];
+    var customer = tactics.values[i][30];
+    var erReferens = tactics.values[i][29];
+    
+    //Gets todays date
+    var date = new Date();
+    var monthYear = Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM')
+    var dateFormat = Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    
+    
+    //Make a copy of the template file
+    var documentId = DriveApp.getFileById(templateId).makeCopy().getId();
+    
+    //Rename the copied file
+    DriveApp.getFileById(documentId).setName(monthYear + '_' + 'Faktura' + house);
+    
+    //Get the document body as a variable
+    var body = DocumentApp.openById(documentId).getBody();
+    
+    //Insert info about customer into faktura
+    body.replaceText('##köpare##', customer);
+    body.replaceText('##kundNr##', kundNr);
+    body.replaceText('##fakturaNr##', fakturaNr);
+    body.replaceText('##erReferens##', erReferens);
+    
+    
+    //Insert cost into faktura
+    body.replaceText('##parkering##', parkering);
+    body.replaceText('##vägen##', road);
+    body.replaceText('##extra##', extra);
+    body.replaceText('##apanage##', apanage);
+    body.replaceText('##avrundat##', avrundat);
+    body.replaceText('##öresavrundning##', oresavrundning);
+    
+    //Insert date to faktura
+    body.replaceText('##datum##', dateFormat);
+    
+    
+   
+        
+    //Append tactics
+    //parseTactics(headers.values[0], tactics.values[i], body);
+    
+  }
+
+}
+
+function parseTactics(headers, tactics, body){ 
+  
+  for(var i = 1; i < tactics.length; i++){
+    {tactics[i] != '' && 
+      body.appendListItem(headers[i] + ' | ' + tactics[i] + ' net').setGlyphType(DocumentApp.GlyphType.BULLET);
+    }
+    
+  }
+}
