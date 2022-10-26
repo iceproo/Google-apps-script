@@ -1,0 +1,50 @@
+function createRegMailFromTemplate() {
+  var fileNameTemplate = 'Mall script läger anmälningsbekräftelse'
+  //var sheetResponseID = '1QCrgDjmx_wwaYvpTMf0a_NS_WOslHBdGoilfqi2lUqk';
+  
+  // Get answer-sheet
+  var ss = SpreadsheetApp.getActiveSheet();
+  var lastRowInt = ss.getLastRow();
+  var lastRowData = ss.getRange(lastRowInt,1,1,9).getValues();
+
+  //Extract data from last row in answer-sheet
+  var nameAthlete = lastRowData[0][5];
+  var nameParent = lastRowData[0][2];
+  var mailParent = lastRowData[0][1];
+  var nameCamp = lastRowData[0][4];
+
+  // Get info from template
+  // Open folder
+  var folderTemplateID = '1PBJkHDyQGNYo_uqM9qINLpmGdBNFDFXY';
+  var folderTextTemplates = DriveApp.getFolderById(folderTemplateID);
+  // Open our relevant template text 
+  var templateTextID = folderTextTemplates.getFilesByName(fileNameTemplate).next().getId();
+  var templateDoc = DocumentApp.openById(templateTextID);
+  // Get text in template
+  var textToSend = templateDoc.getBody().getText();
+  
+  //Debug
+  console.log(textToSend);
+
+  // Replace text
+  textToSend = textToSend.replace('#åkarensNamn', nameAthlete);
+  textToSend = textToSend.replace('#åkarensNamn', nameAthlete);
+  textToSend = textToSend.replace('#förälderNamn', nameParent);
+  textToSend = textToSend.replace('#vilketLäger', nameCamp);
+  
+  //Debug
+  console.log('After replacement:');
+  console.log(textToSend);
+  console.log('Mail to parent: ' + mailParent);
+
+  // Create text in mail
+  var subject = "Anmälningsbekräftelse " + nameAthlete + " - " + nameCamp;
+  // Get booking rules
+  var bookingRulesID = '1O_dqClOyNQVzG14TaXieggiYtj1dZ77YDZftXHwoqnU';
+  var bookingRules = DriveApp.getFileById(bookingRulesID);
+  var bookingRulesPdf = bookingRules.getAs('application/pdf');
+
+  // Create draft
+  GmailApp.createDraft(mailParent, subject, textToSend, {attachments: bookingRulesPdf});
+
+}
